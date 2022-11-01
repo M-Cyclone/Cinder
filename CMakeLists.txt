@@ -35,6 +35,9 @@ export(TARGETS ${PROJECT_NAME} NAMESPACE Cinder:: FILE CinderTargets.cmake)
 add_executable(PathTracer
     ${CMAKE_CURRENT_SOURCE_DIR}/test/PathTracer.cpp
 )
+target_include_directories(PathTracer
+    PRIVATE ${CINDER_HEADER_DIR}
+)
 target_link_libraries(PathTracer
-    PRIVATE 
+    PRIVATE ${PROJECT_NAME}
 )
