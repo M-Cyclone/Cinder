@@ -1,7 +1,11 @@
 #pragma once
+#include <algorithm>
+#include <cmath>
+#include <optional>
 
-#include <glm/geometric.hpp>
-#include <glm/glm.hpp>
+#include <eigen3/Eigen/Eigen>
+
+#include "cinder/utils/Constants.h"
 
 namespace cinder
 {
@@ -10,11 +14,22 @@ namespace geometry
 
 struct Ray
 {
-    Ray() noexcept : pos(0.0f, 0.0f, 0.0f), dir(0.0f, 1.0f, 0.0f) {}
-    Ray(glm::vec3 pos, glm::vec3 dir) : pos(pos), dir(glm::normalize(dir)) {}
+    Ray() noexcept
+        : pos(0.0f, 0.0f, 0.0f)
+        , dir(0.0f, 1.0f, 0.0f)
+        , dir_inv(utils::k_float_max, 1.0f, utils::k_float_max)
+    {}
+    Ray(Eigen::Vector3f pos, Eigen::Vector3f dir)
+        : pos(pos)
+        , dir(dir.normalized())
+        , dir_inv(1.0f / this->dir.x(),
+                  1.0f / this->dir.y(),
+                  1.0f / this->dir.z())
+    {}
 
-    glm::vec3 pos;
-    glm::vec3 dir;
+    Eigen::Vector3f pos;
+    Eigen::Vector3f dir;
+    Eigen::Vector3f dir_inv;
 };
 
 }  // namespace geometry
