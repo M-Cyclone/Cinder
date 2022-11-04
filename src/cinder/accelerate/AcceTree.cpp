@@ -1,8 +1,10 @@
 #include "cinder/accelerate/AcceTree.h"
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "cinder/accelerate/AcceSortFunc.h"
@@ -21,19 +23,17 @@ bool AcceNode::cast(const geometry::Ray&    ray,
     }
 
 
-    geometry::Intersection left_hit_res;
-    bool                   hit_left =
-        (left && left->aabb.cast(ray) && left->cast(ray, left_hit_res));
+    geometry::Intersection l_hit_res;
+    bool                   l_is_hit =
+        (left && left->aabb.cast(ray) && left->cast(ray, l_hit_res));
 
-    geometry::Intersection right_hit_res;
-    bool                   hit_right =
-        (right && right->aabb.cast(ray) && right->cast(ray, right_hit_res));
+    geometry::Intersection r_hit_res;
+    bool                   r_is_hit =
+        (right && right->aabb.cast(ray) && right->cast(ray, r_hit_res));
 
+    if (!l_is_hit && !r_is_hit) return false;
 
-    if (!hit_left && !hit_right) return false;
-
-    hit_res = (left_hit_res.distance < right_hit_res.distance) ? left_hit_res
-                                                               : right_hit_res;
+    hit_res = (l_hit_res.distance < r_hit_res.distance) ? l_hit_res : r_hit_res;
     return true;
 }
 
@@ -47,6 +47,7 @@ void AcceTree::recursiveBuild(std::vector<const geometry::Primitive*> prims,
         std::cout << "Start to Build Tree with BVH." << std::endl;
         m_root = recursiveBuild<AcceSortFuncBVH>(prims.begin(), prims.end());
         std::cout << "Finish to Build Tree with BVH." << std::endl;
+        assert(m_root && "Root node should not be nullptr.");
         break;
     }
     case AcceSortAlgorithm::SAH:

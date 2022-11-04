@@ -12,7 +12,9 @@ namespace render
 {
 
 Renderer::Renderer(int32_t width, int32_t height) noexcept
-    : m_width(width), m_height(height), m_panel(width * height)
+    : m_width(width)
+    , m_height(height)
+    , m_panel(width * height, Eigen::Vector3f(0.0f, 0.0f, 0.0f))
 {}
 
 void Renderer::render()
@@ -20,7 +22,6 @@ void Renderer::render()
     assert(m_camera);
     assert(m_scene);
     assert(m_integrator);
-
 
     m_scene->createAcceTree();
 
@@ -46,9 +47,9 @@ void Renderer::render()
     float height_inv = 1.0f / m_height;
 
     std::vector<RenderTask> render_tasks;
-    for (int32_t x = 0; x < m_width; ++x)
+    for (int32_t y = 0; y < m_height; ++y)
     {
-        for (int32_t y = 0; y < m_height; ++y)
+        for (int32_t x = 0; x < m_width; ++x)
         {
             float u = ((float)x + 0.5f) * width_inv * 2.0f - 1.0f;
             float v = ((float)y + 0.5f) * height_inv * 2.0f - 1.0f;
@@ -65,29 +66,53 @@ void Renderer::render()
     }
 
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, render_tasks.size()),
-        [&](tbb::blocked_range<size_t> r)
+    float spp_count_inv = 1.0f / m_spp_count;
+    for (auto& rt : render_tasks)
+    {
+        rt.res_color = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+        for (size_t k = 0; k < m_spp_count; ++k)
         {
-            for (size_t i = r.begin(); i < r.end(); ++i)
-            {
-                setColor(m_integrator->integrate(*m_scene, render_tasks[i].ray),
-                         render_tasks[i].pos_x,
-                         render_tasks[i].pos_y);
-            }
-        });
+            rt.res_color += m_integrator->integrate(*m_scene, rt.ray);
+        }
+        rt.res_color *= spp_count_inv;
+    }
+
+
+    // tbb::parallel_for(
+    //     tbb::blocked_range<size_t>(0, render_tasks.size()),
+    //     [&](tbb::blocked_range<size_t> r)
+    //     {
+    //         for (size_t i = r.begin(); i < r.end(); ++i)
+    //         {
+    //             render_tasks[i].res_color = Eigen::Vector3f(0.0f, 0.0f,
+    //             0.0f); for (size_t k = 0; k < m_spp_count; ++k)
+    //             {
+    //                 render_tasks[i].res_color +=
+    //                     m_integrator->integrate(*m_scene,
+    //                     render_tasks[i].ray);
+    //             }
+    //         }
+    //     });
+
+    for (const auto& rt : render_tasks)
+    {
+        setColor(rt.res_color, rt.pos_x, rt.pos_y);
+    }
 }
 
-void Renderer::writeToFile(const std::string& name)
+void Renderer::writeToPPM(const std::string& name)
 {
     std::ofstream file(name);
     file << "P3 " << m_width << ' ' << m_height << ' ' << 255 << ' ';
 
     for (Eigen::Vector3f color : m_panel)
     {
-        uint32_t r = (uint32_t)(color.x() * 255.99f);
-        uint32_t g = (uint32_t)(color.y() * 255.99f);
-        uint32_t b = (uint32_t)(color.z() * 255.99f);
+        uint32_t r =
+            (uint32_t)(255 * std::pow(std::clamp(color.x(), 0.0f, 1.0f), 0.6f));
+        uint32_t g =
+            (uint32_t)(255 * std::pow(std::clamp(color.y(), 0.0f, 1.0f), 0.6f));
+        uint32_t b =
+            (uint32_t)(255 * std::pow(std::clamp(color.z(), 0.0f, 1.0f), 0.6f));
 
         file << r << ' ' << g << ' ' << b << ' ';
     }

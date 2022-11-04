@@ -1,8 +1,10 @@
 #include "cinder/geometry/Triangle.h"
+#include <cmath>
 #include <iostream>
 
 #include "cinder/geometry/Intersect.h"
 
+#include "cinder/geometry/Primitive.h"
 #include "cinder/utils/Constants.h"
 
 namespace cinder
@@ -10,7 +12,7 @@ namespace cinder
 namespace geometry
 {
 
-bool Triangle::cast(const Ray& ray, Intersection& hit_res) const
+bool Triangle::cast(const Ray& ray, geometry::Intersection& hit_res) const
 {
     // Möller-Trumbore algorithm
     Eigen::Vector3f e1 = v1.pos - v0.pos;
@@ -20,7 +22,7 @@ bool Triangle::cast(const Ray& ray, Intersection& hit_res) const
     Eigen::Vector3f p_vec = ray.dir.cross(e2);
 
     float det = p_vec.dot(e1);
-    if (std::abs(det) < utils::k_eps) return false;
+    if (det < utils::k_eps) return false;
     float det_inv = 1.0f / det;
 
 
@@ -40,14 +42,36 @@ bool Triangle::cast(const Ray& ray, Intersection& hit_res) const
     if (t < utils::k_eps) return false;
 
 
-    hit_res.pos = ray.pos + t * ray.dir;
-    hit_res.normal =
+    hit_res = Intersection(
+        ray.pos + t * ray.dir,
         ((1.0f - u - v) * v0.normal + u * v1.normal + v * v2.normal)
-            .normalized();
-    hit_res.distance = t;
-    hit_res.mat      = material;
+            .normalized(),
+        t,
+        material);
 
     return true;
+}
+
+SamplePrimitiveResult Triangle::sample(
+    std::shared_ptr<sampler::Sampler> spl) const
+{
+    float rand_u      = spl->getUniformFloat01();
+    float rand_v      = spl->getUniformFloat01();
+    float rand_sqrt_v = std::sqrt(rand_v);
+
+    float a = (1.0f - rand_u) * rand_sqrt_v;
+    float b = rand_u * rand_sqrt_v;
+    float c = (1.0f - rand_sqrt_v);
+
+
+    SamplePrimitiveResult sample_res;
+    sample_res.pos = a * v0.pos + b * v1.pos + c * v2.pos;
+    sample_res.normal =
+        (a * v0.normal + b * v1.normal + c * v2.normal).normalized();
+    sample_res.pdf = surface_area_inv;
+    sample_res.mat = material;
+
+    return sample_res;
 }
 
 }  // namespace geometry

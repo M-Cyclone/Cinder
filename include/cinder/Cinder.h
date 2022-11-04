@@ -17,7 +17,17 @@
 #include "cinder/geometry/Vertex.h"
 
 // integrator
+#include "cinder/integrator/DirectLightingIntegrator.h"
 #include "cinder/integrator/Integrator.h"
+
+// renderer
+#include "cinder/render/BasicDiffuseMaterial.h"
+#include "cinder/render/BasicEmitMaterial.h"
+#include "cinder/render/Material.h"
+#include "cinder/render/Renderer.h"
+
+// sampler
+#include "cinder/sampler/Sampler.h"
 
 // utils files
 #include "cinder/utils/Constants.h"

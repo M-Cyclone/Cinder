@@ -73,7 +73,7 @@ bool AABB::cast(const Ray& ray) const
     float t0 = std::max(min_tx, std::max(min_ty, min_tz));
     float t1 = std::min(max_tx, std::min(max_ty, max_tz));
 
-    return t0 < t1;
+    return t0 <= t1;
 }
 
 }  // namespace geometry
