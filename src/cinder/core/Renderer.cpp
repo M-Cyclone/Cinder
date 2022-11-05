@@ -1,14 +1,16 @@
-#include "cinder/render/Renderer.h"
+#include "cinder/core/Renderer.h"
 #include <cassert>
 #include <fstream>
 #include <vector>
 
-#include <oneapi/tbb/blocked_range.h>
-#include <oneapi/tbb/parallel_for.h>
+//#include <oneapi/tbb/blocked_range.h>
+//#include <oneapi/tbb/parallel_for.h>
+
+#include "cinder/utils/stb_image_write.h"
 
 namespace cinder
 {
-namespace render
+namespace core
 {
 
 Renderer::Renderer(int32_t width, int32_t height) noexcept
@@ -46,6 +48,7 @@ void Renderer::render()
     float width_inv  = 1.0f / m_width;
     float height_inv = 1.0f / m_height;
 
+    float                   spp_count_inv = 1.0f / m_spp_count;
     std::vector<RenderTask> render_tasks;
     for (int32_t y = 0; y < m_height; ++y)
     {
@@ -66,33 +69,21 @@ void Renderer::render()
     }
 
 
-    float spp_count_inv = 1.0f / m_spp_count;
+    int i = 0;
     for (auto& rt : render_tasks)
     {
+        auto spl     = m_sampler->create();
         rt.res_color = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
         for (size_t k = 0; k < m_spp_count; ++k)
         {
-            rt.res_color += m_integrator->integrate(*m_scene, rt.ray);
+            rt.res_color += m_integrator->integrate(*m_scene, rt.ray, *spl);
         }
         rt.res_color *= spp_count_inv;
+
+        std::cout << (i / (float)(m_width * m_height)) << '\r';
+        ++i;
     }
 
-
-    // tbb::parallel_for(
-    //     tbb::blocked_range<size_t>(0, render_tasks.size()),
-    //     [&](tbb::blocked_range<size_t> r)
-    //     {
-    //         for (size_t i = r.begin(); i < r.end(); ++i)
-    //         {
-    //             render_tasks[i].res_color = Eigen::Vector3f(0.0f, 0.0f,
-    //             0.0f); for (size_t k = 0; k < m_spp_count; ++k)
-    //             {
-    //                 render_tasks[i].res_color +=
-    //                     m_integrator->integrate(*m_scene,
-    //                     render_tasks[i].ray);
-    //             }
-    //         }
-    //     });
 
     for (const auto& rt : render_tasks)
     {
@@ -116,6 +107,27 @@ void Renderer::writeToPPM(const std::string& name)
 
         file << r << ' ' << g << ' ' << b << ' ';
     }
+}
+
+void Renderer::writeToPNG(const std::string& name)
+{
+    std::vector<uint8_t> data;
+    for (Eigen::Vector3f color : m_panel)
+    {
+        uint32_t r =
+            (uint32_t)(255 * std::pow(std::clamp(color.x(), 0.0f, 1.0f), 0.6f));
+        uint32_t g =
+            (uint32_t)(255 * std::pow(std::clamp(color.y(), 0.0f, 1.0f), 0.6f));
+        uint32_t b =
+            (uint32_t)(255 * std::pow(std::clamp(color.z(), 0.0f, 1.0f), 0.6f));
+
+        data.push_back((uint8_t)r);
+        data.push_back((uint8_t)g);
+        data.push_back((uint8_t)b);
+        data.push_back(255);
+    }
+
+    stbi_write_png(name.c_str(), m_width, m_height, 4, data.data(), 0);
 }
 
 }  // namespace render

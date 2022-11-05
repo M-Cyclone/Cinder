@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/render/BasicDiffuseMaterial.h"
 

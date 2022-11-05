@@ -1,7 +1,7 @@
 #pragma once
 #include <cstddef>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/render/Material.h"
 
@@ -59,8 +59,7 @@ struct Triangle : Primitive
 
     virtual bool                  cast(const Ray&              ray,
                                        geometry::Intersection& hit_res) const override;
-    virtual SamplePrimitiveResult sample(
-        std::shared_ptr<sampler::Sampler> spl) const override;
+    virtual SamplePrimitiveResult sample(sampler::Sampler& spl) const override;
 
     Vertex v0;
     Vertex v1;

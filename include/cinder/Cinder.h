@@ -2,6 +2,7 @@
 
 // core files
 #include "cinder/core/Scene.h"
+#include "cinder/core/Renderer.h"
 
 // accelerate files
 #include "cinder/accelerate/AcceSortFunc.h"
@@ -17,14 +18,14 @@
 #include "cinder/geometry/Vertex.h"
 
 // integrator
-#include "cinder/integrator/DirectLightingIntegrator.h"
 #include "cinder/integrator/Integrator.h"
+#include "cinder/integrator/DirectLightingIntegrator.h"
+#include "cinder/integrator/PathTracingIntegrator.h"
 
 // renderer
 #include "cinder/render/BasicDiffuseMaterial.h"
 #include "cinder/render/BasicEmitMaterial.h"
 #include "cinder/render/Material.h"
-#include "cinder/render/Renderer.h"
 
 // sampler
 #include "cinder/sampler/Sampler.h"

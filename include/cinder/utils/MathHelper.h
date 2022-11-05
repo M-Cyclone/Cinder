@@ -1,6 +1,6 @@
 #pragma once
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/utils/Constants.h"
 
@@ -27,12 +27,12 @@ static Eigen::Vector3f vectorLocalToWorld(Eigen::Vector3f vec,
 
     if (std::abs(nor.x()) > std::abs(nor.y()))
     {
-        float inv_len = 1.0f / std::sqrt(nor.x() * nor.x() + nor.y() * nor.y());
+        float inv_len = 1.0f / std::sqrt(nor.x() * nor.x() + nor.z() * nor.z());
         C = Eigen::Vector3f(nor.z() * inv_len, 0.0f, -nor.x() * inv_len);
     }
     else
     {
-        float inv_len = 1.0f / std::sqrt(nor.y() * nor.y() + nor.y() * nor.y());
+        float inv_len = 1.0f / std::sqrt(nor.y() * nor.y() + nor.z() * nor.z());
         C = Eigen::Vector3f(0.0f, nor.z() * inv_len, -nor.y() * inv_len);
     }
 

@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <tuple>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/render/Material.h"
 
@@ -22,14 +22,6 @@ struct Intersection
         , distance(utils::k_float_max)
         , mat(nullptr)
     {}
-    Intersection(Eigen::Vector3f         p,
-                 Eigen::Vector3f         n,
-                 float                   dist,
-                 const render::Material* m)
-        : pos(p), normal(n), distance(dist), mat(m)
-    {}
-    Intersection(const Intersection&)            = default;
-    Intersection& operator=(const Intersection&) = default;
 
     Eigen::Vector3f pos;
     Eigen::Vector3f normal;

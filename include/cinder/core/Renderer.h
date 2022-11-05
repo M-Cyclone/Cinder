@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/core/Scene.h"
 
@@ -14,9 +14,11 @@
 
 #include "cinder/integrator/Integrator.h"
 
+#include "cinder/sampler/Sampler.h"
+
 namespace cinder
 {
-namespace render
+namespace core
 {
 
 struct RenderTask
@@ -43,11 +45,16 @@ public:
     {
         m_integrator = in;
     }
+    void setSampler(std::unique_ptr<sampler::Sampler> spl)
+    {
+        m_sampler = std::move(spl);
+    }
     void setSPPCount(size_t count) { m_spp_count = count; }
 
     void render();
 
     void writeToPPM(const std::string& name);
+    void writeToPNG(const std::string& name);
 
 private:
     void setColor(Eigen::Vector3f color, int32_t x, int32_t y)
@@ -64,6 +71,7 @@ private:
     std::shared_ptr<core::Scene>            m_scene;
     std::shared_ptr<geometry::Camera>       m_camera;
     std::shared_ptr<integrator::Integrator> m_integrator;
+    std::unique_ptr<sampler::Sampler>       m_sampler;
 };
 
 }  // namespace render

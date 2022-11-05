@@ -17,10 +17,11 @@ namespace accelerate
 bool AcceNode::cast(const geometry::Ray&    ray,
                     geometry::Intersection& hit_res) const
 {
-    if (!left && !right)
+    if (primitive)
     {
         return primitive->cast(ray, hit_res);
     }
+    assert((left || right));
 
 
     geometry::Intersection l_hit_res;
@@ -31,10 +32,12 @@ bool AcceNode::cast(const geometry::Ray&    ray,
     bool                   r_is_hit =
         (right && right->aabb.cast(ray) && right->cast(ray, r_hit_res));
 
+
     if (!l_is_hit && !r_is_hit) return false;
 
+
     hit_res = (l_hit_res.distance < r_hit_res.distance) ? l_hit_res : r_hit_res;
-    return true;
+    return hit_res.distance != utils::k_float_max;
 }
 
 void AcceTree::recursiveBuild(std::vector<const geometry::Primitive*> prims,

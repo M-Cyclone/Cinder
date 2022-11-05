@@ -2,11 +2,13 @@
 #include <cstdint>
 #include <vector>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/core/Scene.h"
 
 #include "cinder/geometry/Ray.h"
+
+#include "cinder/sampler/Sampler.h"
 
 namespace cinder
 {
@@ -22,7 +24,8 @@ public:
     virtual ~Integrator() noexcept                    = default;
 
     virtual Eigen::Vector3f integrate(const core::Scene&   scene,
-                                      const geometry::Ray& ray) const;
+                                      const geometry::Ray& ray,
+                                      sampler::Sampler&    spl) const;
 };
 
 }  // namespace integrator

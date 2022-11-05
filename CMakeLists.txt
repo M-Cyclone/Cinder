@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Eigen3 3 REQUIRED)
-# find_package(TBB REQUIRED)
 
 set(CINDER_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/cinder)
 set(CINDER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/cinder)
@@ -42,7 +41,17 @@ file(GLOB cinder_utils_files CONFIGURE_DEPENDS
     ${CINDER_SOURCE_DIR}/utils/*.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED
+if(MSVC)
+    source_group(accelerate FILES ${cinder_accelerate_files})
+    source_group(core       FILES ${cinder_core_files})
+    source_group(geometry   FILES ${cinder_geometry_files})
+    source_group(integrator FILES ${cinder_integrator_files})
+    source_group(render     FILES ${cinder_render_files})
+    source_group(sampler    FILES ${cinder_sampler_files})
+    source_group(uitls      FILES ${cinder_utils_files})
+endif()
+
+add_library(${PROJECT_NAME} STATIC
     ${cinder_accelerate_files}
     ${cinder_core_files}
     ${cinder_geometry_files}
@@ -54,10 +63,10 @@ add_library(${PROJECT_NAME} SHARED
 )
 target_include_directories(${PROJECT_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PUBLIC ${EXTERNAL_DIR}/stb/include
 )
 target_link_libraries(${PROJECT_NAME}
     Eigen3::Eigen
-    # TBB::tbb
 )
 
 export(TARGETS ${PROJECT_NAME} NAMESPACE Cinder:: FILE CinderTargets.cmake)
@@ -72,3 +81,8 @@ target_include_directories(PathTracer
 target_link_libraries(PathTracer
     PRIVATE ${PROJECT_NAME}
 )
+
+
+if(MSVC)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PathTracer)
+endif()

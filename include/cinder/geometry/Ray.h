@@ -3,7 +3,7 @@
 #include <cmath>
 #include <optional>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/utils/Constants.h"
 

@@ -13,7 +13,8 @@ public:
     DirectLightingIntegrator() noexcept = default;
 
     virtual Eigen::Vector3f integrate(const core::Scene&   scene,
-                                      const geometry::Ray& ray) const;
+                                      const geometry::Ray& ray,
+                                      sampler::Sampler&    spl) const override;
 };
 
 }  // namespace integrator

@@ -2,7 +2,7 @@
 #include <cmath>
 #include <utility>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/utils/MathHelper.h"
 

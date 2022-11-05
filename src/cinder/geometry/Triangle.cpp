@@ -15,9 +15,6 @@ namespace geometry
 bool Triangle::cast(const Ray& ray, geometry::Intersection& hit_res) const
 {
     // Möller-Trumbore algorithm
-    Eigen::Vector3f e1 = v1.pos - v0.pos;
-    Eigen::Vector3f e2 = v2.pos - v0.pos;
-
 
     Eigen::Vector3f p_vec = ray.dir.cross(e2);
 
@@ -35,33 +32,31 @@ bool Triangle::cast(const Ray& ray, geometry::Intersection& hit_res) const
     Eigen::Vector3f q_vec = t_vec.cross(e1);
 
     float v = ray.dir.dot(q_vec) * det_inv;
-    if (v < 0.0f || u + v > 1.0f) return false;
+    if ((v < 0.0f) || (u + v > 1.0f)) return false;
 
 
     float t = e2.dot(q_vec) * det_inv;
-    if (t < utils::k_eps) return false;
+    if (t <= 0.0f) return false;
 
 
-    hit_res = Intersection(
-        ray.pos + t * ray.dir,
+    hit_res.pos = ray.pos + t * ray.dir;
+    hit_res.normal =
         ((1.0f - u - v) * v0.normal + u * v1.normal + v * v2.normal)
-            .normalized(),
-        t,
-        material);
+            .normalized();
+    hit_res.distance = t;
+    hit_res.mat      = material;
 
     return true;
 }
 
-SamplePrimitiveResult Triangle::sample(
-    std::shared_ptr<sampler::Sampler> spl) const
+SamplePrimitiveResult Triangle::sample(sampler::Sampler& spl) const
 {
-    float rand_u      = spl->getUniformFloat01();
-    float rand_v      = spl->getUniformFloat01();
-    float rand_sqrt_v = std::sqrt(rand_v);
+    float rand_u = std::sqrt(spl.getUniformFloat01());
+    float rand_v = spl.getUniformFloat01();
 
-    float a = (1.0f - rand_u) * rand_sqrt_v;
-    float b = rand_u * rand_sqrt_v;
-    float c = (1.0f - rand_sqrt_v);
+    float a = 1.0f - rand_u;
+    float b = rand_u * (1.0f - rand_v);
+    float c = rand_u * rand_v;
 
 
     SamplePrimitiveResult sample_res;

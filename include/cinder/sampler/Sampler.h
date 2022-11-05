@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
 #include <random>
+#include <memory>
+#include <mutex>
 
 namespace cinder
 {
@@ -10,7 +12,9 @@ namespace sampler
 class Sampler
 {
 public:
-    Sampler() noexcept : m_random_engine{}, m_random_distribution(0.0f, 1.0f) {}
+    Sampler() noexcept
+        : m_random_engine{ s_random_seed++ }, m_random_distribution(0.0f, 1.0f)
+    {}
     virtual ~Sampler() noexcept = default;
 
     float getUniformFloat01()
@@ -21,10 +25,16 @@ public:
         return res;
     }
 
+    std::unique_ptr<Sampler> create() const
+    {
+        return std::make_unique<Sampler>();
+    }
+
 private:
-    // std::mt19937                          m_random_engine;
     std::default_random_engine            m_random_engine;
     std::uniform_real_distribution<float> m_random_distribution;
+
+    inline static size_t s_random_seed = 0;
 };
 
 }  // namespace sampler

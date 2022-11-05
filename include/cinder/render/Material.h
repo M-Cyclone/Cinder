@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/sampler/Sampler.h"
 
@@ -24,10 +24,12 @@ public:
                                     Eigen::Vector3f wi,
                                     Eigen::Vector3f wo) const = 0;
 
-    virtual Eigen::Vector3f sampleRayDir(
-        Eigen::Vector3f                   normal,
-        Eigen::Vector3f                   wi,
-        std::shared_ptr<sampler::Sampler> spl) const = 0;
+    virtual Eigen::Vector3f sampleRayDir(Eigen::Vector3f   normal,
+                                         Eigen::Vector3f   wi,
+                                         sampler::Sampler& spl) const = 0;
+    virtual float           sampleDirPdf(Eigen::Vector3f normal,
+                                         Eigen::Vector3f wi,
+                                         Eigen::Vector3f wo) const    = 0;
 };
 
 }  // namespace render

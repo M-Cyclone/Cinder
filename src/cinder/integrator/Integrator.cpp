@@ -10,7 +10,8 @@ namespace integrator
 {
 
 Eigen::Vector3f Integrator::integrate(const core::Scene&   scene,
-                                      const geometry::Ray& ray) const
+                                      const geometry::Ray& ray,
+                                      sampler::Sampler&    spl) const
 {
     geometry::Intersection hit_res;
     if (scene.cast(ray, hit_res))

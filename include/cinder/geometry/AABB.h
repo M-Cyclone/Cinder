@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/geometry/Ray.h"
 

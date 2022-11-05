@@ -14,43 +14,38 @@ void Scene::createAcceTree()
 {
     std::vector<const geometry::Primitive*> primitives;
 
-    for (const geometry::Primitive* prim : m_primitives)
+    for (const geometry::Triangle& tri : m_triangles)
     {
-        primitives.push_back(prim);
+        primitives.push_back(&tri);
     }
 
-    for (const geometry::Primitive* emit_tri : m_emit_primitives)
+    for (const geometry::Triangle& emit_tri : m_emit_triangles)
     {
-        primitives.push_back(emit_tri);
+        primitives.push_back(&emit_tri);
     }
 
     m_acce_tree.recursiveBuild(std::move(primitives),
                                accelerate::AcceSortAlgorithm::BVH);
 }
 
-geometry::SamplePrimitiveResult Scene::sampleLight(
-    std::shared_ptr<sampler::Sampler> spl) const
+geometry::SamplePrimitiveResult Scene::sampleLight(sampler::Sampler& spl) const
 {
-    float random_01        = spl->getUniformFloat01();
+    float random_01        = spl.getUniformFloat01();
     float random_emit_area = random_01 * m_emit_surface_area_sum;
 
 
-    float  curr_sum_area = 0.0f;
-    size_t idx           = 0;
-    for (const auto& emit_tri : m_emit_primitives)
+    float curr_sum_area = 0.0f;
+    for (const auto& emit_tri : m_emit_triangles)
     {
-        if (curr_sum_area < random_emit_area)
+        curr_sum_area += emit_tri.surface_area;
+        if (curr_sum_area >= random_emit_area)
         {
-            ++idx;
-            curr_sum_area += emit_tri->surface_area;
-        }
-        else
-        {
-            break;
+            return emit_tri.sample(spl);
         }
     }
 
-    return m_emit_primitives[idx - 1]->sample(spl);
+    assert(false && "Should not be here.");
+    return {};
 }
 
 }  // namespace core

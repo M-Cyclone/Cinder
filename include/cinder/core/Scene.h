@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/accelerate/AcceTree.h"
 #include "cinder/geometry/Intersect.h"
@@ -28,16 +28,16 @@ public:
 
     void createAcceTree();
 
-    void addTriangle(const geometry::Primitive& prim)
+    void addTriangle(const geometry::Triangle tri)
     {
-        if (prim.material->hasEmission())
+        if (tri.material->hasEmission())
         {
-            m_emit_surface_area_sum += prim.surface_area;
-            m_emit_primitives.push_back(&prim);
+            m_emit_surface_area_sum += tri.surface_area;
+            m_emit_triangles.push_back(tri);
         }
         else
         {
-            m_primitives.push_back(&prim);
+            m_triangles.push_back(tri);
         }
     }
 
@@ -46,15 +46,14 @@ public:
         return m_acce_tree.cast(ray, hit_res);
     }
 
-    geometry::SamplePrimitiveResult sampleLight(
-        std::shared_ptr<sampler::Sampler> spl) const;
+    geometry::SamplePrimitiveResult sampleLight(sampler::Sampler& spl) const;
 
 private:
     accelerate::AcceTree m_acce_tree;
 
-    std::vector<const geometry::Primitive*> m_primitives;
-    std::vector<const geometry::Primitive*> m_emit_primitives;
-    float                                   m_emit_surface_area_sum;
+    std::vector<geometry::Triangle> m_triangles;
+    std::vector<geometry::Triangle> m_emit_triangles;
+    float                           m_emit_surface_area_sum;
 };
 
 }  // namespace core

@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 
 #include "cinder/render/Material.h"
 
@@ -34,8 +34,7 @@ struct Primitive
     virtual bool cast(const Ray&              ray,
                       geometry::Intersection& hit_res) const = 0;
 
-    virtual SamplePrimitiveResult sample(
-        std::shared_ptr<sampler::Sampler> spl) const = 0;
+    virtual SamplePrimitiveResult sample(sampler::Sampler& spl) const = 0;
 
     float                   surface_area;
     float                   surface_area_inv;
